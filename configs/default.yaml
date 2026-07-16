@@ -1,0 +1,107 @@
+# chess_analyzer default configuration
+# All values here mirror the hardcoded constants that used to live inside
+# total.py / extra_style.py / predict_player.py. Overriding any value here
+# (or via the matching environment variable) changes behaviour without
+# touching code. See src/chess_analyzer/core/config.py for the loader.
+
+project:
+  name: "Chess Analyzer"
+  data_source: "player"   # "player" (Line B, per-player) or "baseline" (Line A, sampled)
+  category: "classical"   # classical / rapid / blitz / unknown
+  input_dir: "classical"
+  output_dir: "classical/style"
+
+stockfish:
+  # Placeholder path - set STOCKFISH_PATH env var or edit this to point to
+  # your local Stockfish binary before running engine-dependent steps.
+  path: "/usr/local/bin/stockfish"
+  depth: 14
+  memory: 512
+  multipv: 3
+  sacrifice_depth: 8   # shallow search used only for "active sacrifice" detection
+
+thresholds:
+  opening_moves: 12
+  drawn_eval_limit: 150
+  blunder_threshold: 80          # kept for backward compatibility, superseded by elo-tiered thresholds
+  punish_threshold: 30
+  excellent_loss: 10
+  resilience_threshold: -80
+  strong_elo_diff: -100
+  weak_elo_diff: 100
+  win_path_threshold: 200        # DECISIVE_THRESHOLD in the win-path detector
+  win_path_stable_threshold: 150 # STABLE_THRESHOLD in the win-path detector
+  opponent_blunder_drop: 100     # OPP_BLUNDER_DROP for tactical-alertness detection
+  deviation_high: 15
+  deviation_low: -15
+  min_baseline_n: 30
+  tactical_drop: 100
+  pressure_threshold_seconds: 30
+
+bootstrap:
+  radar_outer: 300
+  radar_inner: 100
+  radar_point: 2000
+  acpl_outer: 1000
+  acpl_inner: 200
+  acpl_point: 5000
+
+elo_tiers:
+  # [min_inclusive, max_exclusive, tier_name]
+  - [0, 1400, null]                  # below 1400: not tiered (assign_tier -> None)
+  - [1400, 1600, "Tier0_1400_1599"]
+  - [1600, 1800, "Tier1_1600_1799"]
+  - [1800, 2000, "Tier2_1800_1999"]
+  - [2000, 2200, "Tier3_2000_2199"]
+  - [2200, 2400, "Tier4_2200_2399"]
+  - [2400, 2600, "Tier5_2400_2599"]
+  - [2600, 999999, "Tier6_2600plus"]
+
+# Effective-sacrifice evaluation-drop tolerance, keyed by upper Elo bound (cp)
+sacrifice_thresholds:
+  1600: 180
+  1800: 150
+  2000: 130
+  2200: 110
+  2400: 90
+  9999: 70
+
+# predict_player.py inference configuration
+inference:
+  model_dir: "models"
+  data_dir: "player_analysis"
+  avg_moves_for_time_estimate: 40
+  low_confidence_threshold: 0.35
+  blitz_max_seconds: 300
+  tier_labels:
+    - "Tier0_1400_1599"
+    - "Tier1_1600_1999"
+    - "Tier2_2000_2399"
+    - "Tier3_2400_2599"
+    - "Tier4_2600plus"
+  merge_rules:
+    - [0]
+    - [1, 2]
+    - [3, 4]
+    - [5]
+    - [6]
+  tier_descriptions:
+    Tier0_1400_1599: "入门/初级俱乐部（约1400-1600）"
+    Tier1_1600_1999: "业余中坚（约1600-2000）"
+    Tier2_2000_2399: "业余精英/候选大师（约2000-2400）"
+    Tier3_2400_2599: "国际大师水平（约2400-2600）"
+    Tier4_2600plus: "特级大师水平（2600+）"
+
+# extra_style.py / stats+viz report configuration
+report:
+  output_dir: "player_style"
+  player_name: "Demo Player"
+  lichess_style_file: "baseline_sample_new/rapid_style_features.parquet"
+  lichess_meta_file: "baseline_sample_new/rapid.parquet"
+  lichess_opening_file: "baseline_sample_new/rapid_opening_detail.parquet"
+  twic_phase_file: "twic_sample/classical_phase_ability_full.parquet"
+  twic_meta_file: "twic_sample/classical.parquet"
+  player_style_file: "player_sample/classical_style_features.parquet"
+  player_meta_file: "player_sample/classical.parquet"
+  player_phase_file: "player_sample/classical_phase_ability_full.parquet"
+  player_opening_file: "player_sample/classical_opening_detail.parquet"
