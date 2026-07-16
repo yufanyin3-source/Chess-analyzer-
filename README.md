@@ -57,7 +57,7 @@ flowchart LR
 三条端到端流水线（`chess_analyzer.pipeline`）：
 
 | 流水线 | 用途 |
-|---|---|---|
+|---|---|
 | `run_feature_pipeline` | 从已抓取的 parquet 对局库批量生成四类特征表 |
 | `run_inference` | 从单份 PGN 端到端预测等级分区间 |
 | `run_style_report` | 生成目标棋手 vs 基线人群的可视化报告 |
